@@ -73,11 +73,17 @@ function renderEducation() {
 
 function renderModules() {
   return heading('05 / MAKE IT YOURS', '按你的故事排版。', '调整模块标题与顺序；隐藏的模块保留数据，但不会出现在预览和导出中。') +
-    `<div class="module-list">${resume.modules.map((module, index) => `<section class="module-card"><div class="module-row"><span class="module-order">${String(index + 1).padStart(2, '0')}</span><div class="module-name"><label for="module-title-${index}">模块标题</label><input id="module-title-${index}" data-module-title="${index}" value="${esc(module.title)}" maxlength="40" aria-label="第 ${index + 1} 个模块标题"></div><div class="module-controls"><button data-action="move-module" data-index="${index}" data-direction="-1" aria-label="将 ${esc(module.title)} 上移" ${index === 0 ? 'disabled' : ''}>↑</button><button data-action="move-module" data-index="${index}" data-direction="1" aria-label="将 ${esc(module.title)} 下移" ${index === resume.modules.length - 1 ? 'disabled' : ''}>↓</button><button class="module-visibility ${module.visible ? 'on' : ''}" data-action="toggle-module" data-index="${index}" aria-label="${module.visible ? '隐藏' : '显示'} ${esc(module.title)}">${module.visible ? '显示中' : '已隐藏'}</button>${module.type === 'custom' ? `<button class="module-delete" data-action="delete-module" data-index="${index}" aria-label="删除 ${esc(module.title)}">×</button>` : ''}</div></div>${module.type === 'custom' ? renderCustomItems(module, index) : ''}</section>`).join('')}</div><div class="new-module"><label for="new-module-name">添加自定义模块</label><div><input id="new-module-name" placeholder="例如：荣誉奖项、证书、开源贡献" maxlength="40"><button class="primary-button" data-action="add-module">＋ 添加模块</button></div><small>自定义模块可以添加多条记录，每条包含标题、说明、时间和详情。</small></div>`;
+    `<div class="module-list">${resume.modules.map((module, index) => `<section class="module-card"><div class="module-row"><span class="module-order">${String(index + 1).padStart(2, '0')}</span><div class="module-name"><label for="module-title-${index}">模块标题</label><input id="module-title-${index}" data-module-title="${index}" value="${esc(module.title)}" maxlength="40" aria-label="第 ${index + 1} 个模块标题"></div><div class="module-controls"><button data-action="move-module" data-index="${index}" data-direction="-1" aria-label="将 ${esc(module.title)} 上移" ${index === 0 ? 'disabled' : ''}>↑</button><button data-action="move-module" data-index="${index}" data-direction="1" aria-label="将 ${esc(module.title)} 下移" ${index === resume.modules.length - 1 ? 'disabled' : ''}>↓</button><button class="module-visibility ${module.visible ? 'on' : ''}" data-action="toggle-module" data-index="${index}" aria-label="${module.visible ? '隐藏' : '显示'} ${esc(module.title)}">${module.visible ? '显示中' : '已隐藏'}</button>${module.type === 'custom' ? `<button data-action="open-custom" data-index="${index}" aria-label="编辑 ${esc(module.title)}">编辑 ↗</button><button class="module-delete" data-action="delete-module" data-index="${index}" aria-label="删除 ${esc(module.title)}">×</button>` : ''}</div></div></section>`).join('')}</div><div class="new-module"><label for="new-module-name">添加自定义模块</label><div><input id="new-module-name" placeholder="例如：荣誉奖项、证书、开源贡献" maxlength="40"><button class="primary-button" data-action="add-module">＋ 添加模块</button></div><small>添加后会在顶部生成一个同级标签，进入该标签填写内容。</small></div>`;
+}
+
+function renderCustomModule(module, moduleIndex) {
+  return heading('CUSTOM / YOUR SECTION', esc(module.title), '这是独立的简历模块。内容会按模块管理中的顺序进入预览与导出。') +
+    `<div class="custom-module-toolbar">${field('模块名称', module.title, `data-module-title="${moduleIndex}"`, '例如：荣誉奖项')}<button class="quiet-button" data-action="open-module-settings">调整位置与显示状态 ↗</button></div>` +
+    renderCustomItems(module, moduleIndex);
 }
 
 function renderCustomItems(module, moduleIndex) {
-  return `<div class="custom-items"><div class="custom-head"><span>模块内容 · ${module.items.length} 条</span><button class="mini-add" data-action="add-custom-item" data-index="${moduleIndex}">＋ 添加记录</button></div>${module.items.map((item, itemIndex) => `<div class="custom-item"><div class="custom-item-head"><strong>记录 ${itemIndex + 1}</strong><button class="icon-button" data-action="remove-custom-item" data-index="${moduleIndex}" data-item-index="${itemIndex}" aria-label="删除第 ${itemIndex + 1} 条记录">×</button></div><div class="form-grid">${field('标题', item.title, `data-custom-item="${moduleIndex}|${itemIndex}|title"`, '例如：全国大学生设计竞赛')}${field('角色 / 说明', item.subtitle, `data-custom-item="${moduleIndex}|${itemIndex}|subtitle"`, '例如：一等奖')}${field('时间', item.period, `data-custom-item="${moduleIndex}|${itemIndex}|period"`, '例如：2024.06')}${field('详情', item.details, `data-custom-item="${moduleIndex}|${itemIndex}|details"`, '写清可核实的事实。', true, 3)}</div></div>`).join('')}</div>`;
+  return `<div class="custom-items"><div class="custom-head"><span>模块内容 · ${module.items.length} 条</span><button class="mini-add" data-action="add-custom-item" data-index="${moduleIndex}">＋ 添加记录</button></div>${module.items.length ? '' : '<p class="custom-empty">这里还没有记录。添加一条，写下奖项、证书或其他想展示的经历。</p>'}${module.items.map((item, itemIndex) => `<div class="custom-item"><div class="custom-item-head"><strong>记录 ${itemIndex + 1}</strong><button class="icon-button" data-action="remove-custom-item" data-index="${moduleIndex}" data-item-index="${itemIndex}" aria-label="删除第 ${itemIndex + 1} 条记录">×</button></div><div class="form-grid">${field('标题', item.title, `data-custom-item="${moduleIndex}|${itemIndex}|title"`, '例如：全国大学生设计竞赛')}${field('角色 / 说明', item.subtitle, `data-custom-item="${moduleIndex}|${itemIndex}|subtitle"`, '例如：一等奖')}${field('时间', item.period, `data-custom-item="${moduleIndex}|${itemIndex}|period"`, '例如：2024.06')}${field('详情', item.details, `data-custom-item="${moduleIndex}|${itemIndex}|details"`, '写清可核实的事实。', true, 3)}</div></div>`).join('')}</div>`;
 }
 
 function renderAI() {
@@ -88,9 +94,16 @@ function renderAI() {
 }
 
 function renderTab() {
+  $('#custom-tabs').innerHTML = resume.modules.filter(module => module.type === 'custom').map(module => `<button class="tab custom-tab" data-tab="custom:${esc(module.id)}" aria-label="编辑 ${esc(module.title)}" title="编辑 ${esc(module.title)}">${esc(module.title)}</button>`).join('');
+  let render = ({ profile: renderProfile, experience: () => renderCards('experiences'), projects: renderProjects, education: renderEducation, modules: renderModules, ai: renderAI })[activeTab];
+  if (activeTab.startsWith('custom:')) {
+    const moduleIndex = resume.modules.findIndex(module => module.id === activeTab.slice(7) && module.type === 'custom');
+    render = moduleIndex < 0 ? null : () => renderCustomModule(resume.modules[moduleIndex], moduleIndex);
+  }
+  if (!render) { activeTab = 'modules'; render = renderModules; }
   $('.tabs .active')?.classList.remove('active');
   $(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
-  $('#tab-content').innerHTML = ({ profile: renderProfile, experience: () => renderCards('experiences'), projects: renderProjects, education: renderEducation, modules: renderModules, ai: renderAI })[activeTab]();
+  $('#tab-content').innerHTML = render();
   $('#demo-banner').classList.toggle('hidden', !demoMode);
 }
 
@@ -158,6 +171,9 @@ function openProposal(info) {
 function closeProposal() { proposal = null; $('#proposal-backdrop').classList.add('hidden'); }
 
 $('.tabs').addEventListener('click', event => {
+  if (event.target.closest('#quick-add-module')) {
+    activeTab = 'modules'; renderTab(); $('#new-module-name').focus(); return;
+  }
   const tab = event.target.closest('[data-tab]'); if (!tab) return;
   activeTab = tab.dataset.tab; renderTab();
 });
@@ -177,7 +193,11 @@ $('#tab-content').addEventListener('input', event => {
     const [section, index, bIndex] = el.dataset.bullet.split('|');
     resume[section][Number(index)].bullets[Number(bIndex)] = el.value; update();
   } else if (el.dataset.moduleTitle !== undefined) {
-    resume.modules[Number(el.dataset.moduleTitle)].title = el.value.slice(0, 40); update();
+    const module = resume.modules[Number(el.dataset.moduleTitle)];
+    module.title = el.value.slice(0, 40);
+    const tab = $(`.custom-tab[data-tab="custom:${module.id}"]`);
+    if (tab) { tab.textContent = module.title || '未命名模块'; tab.setAttribute('aria-label', `编辑 ${module.title || '未命名模块'}`); }
+    update();
   } else if (el.dataset.customItem) {
     const [moduleIndex, itemIndex, key] = el.dataset.customItem.split('|');
     resume.modules[Number(moduleIndex)].items[Number(itemIndex)][key] = el.value; update();
@@ -187,7 +207,10 @@ $('#tab-content').addEventListener('input', event => {
 $('#tab-content').addEventListener('focusout', event => {
   if (event.target.dataset.moduleTitle === undefined) return;
   resume.modules = normalizeModules(resume.modules);
-  event.target.value = resume.modules[Number(event.target.dataset.moduleTitle)].title;
+  const module = resume.modules[Number(event.target.dataset.moduleTitle)];
+  event.target.value = module.title;
+  const tab = $(`.custom-tab[data-tab="custom:${module.id}"]`);
+  if (tab) { tab.textContent = module.title; tab.setAttribute('aria-label', `编辑 ${module.title}`); }
   update();
 });
 
@@ -200,9 +223,13 @@ $('#tab-content').addEventListener('click', async event => {
       const name = $('#new-module-name').value.trim();
       if (!name) return toast('请先输入模块名称。');
       if (resume.modules.length >= 20) return toast('最多支持 20 个模块。');
-      resume.modules.push({ id: `custom-${id()}`, type: 'custom', title: name.slice(0, 40), visible: true, items: [] });
+      const module = { id: `custom-${id()}`, type: 'custom', title: name.slice(0, 40), visible: true, items: [] };
+      resume.modules.push(module);
+      activeTab = `custom:${module.id}`;
     } else if (action.dataset.action === 'move-module') resume.modules = moveModule(resume.modules, i, Number(action.dataset.direction));
     else if (action.dataset.action === 'toggle-module') resume.modules[i].visible = !resume.modules[i].visible;
+    else if (action.dataset.action === 'open-custom') activeTab = `custom:${resume.modules[i].id}`;
+    else if (action.dataset.action === 'open-module-settings') activeTab = 'modules';
     else if (action.dataset.action === 'delete-module') {
       if (resume.modules[i].type !== 'custom') return;
       if (!confirm(`删除「${resume.modules[i].title}」及其中全部记录？建议先导出 JSON 备份。`)) return;
