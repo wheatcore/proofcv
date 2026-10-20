@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankResume, normalizeResume, sampleResume, toMarkdown, analyzeMatch, applyDraft } from '../dist/resume.js';
+import { blankResume, normalizeResume, sampleResume, toMarkdown, analyzeMatch, applyDraft, moveModule } from '../dist/resume.js';
 
 test('Markdown 导出保留核心简历内容', () => {
   const md = toMarkdown(sampleResume());
@@ -23,6 +23,30 @@ test('AI 草稿只覆盖建议区块，保留联系方式和教育', () => {
   assert.equal(next.summary, '新的摘要');
   assert.equal(next.personal.email, source.personal.email);
   assert.equal(next.education.length, 1);
+  assert.deepEqual(next.modules, source.modules);
+});
+
+test('旧版简历自动获得默认模块，且自定义模块能按顺序导出', () => {
+  const legacy = sampleResume();
+  delete legacy.modules;
+  assert.equal(normalizeResume(legacy).modules.length, 5);
+  const r = sampleResume();
+  r.modules.unshift({ id: 'custom-awards', type: 'custom', title: '荣誉奖项', visible: true, items: [{ id: 'award-1', title: '创新奖', subtitle: '团队成员', period: '2024', details: '负责交互原型' }] });
+  r.modules.find(m => m.id === 'skills').visible = false;
+  const md = toMarkdown(r);
+  assert.ok(md.indexOf('## 荣誉奖项') < md.indexOf('## 个人简介'));
+  assert.match(md, /创新奖/);
+  assert.doesNotMatch(md, /## 核心技能/);
+  assert.ok(analyzeMatch(r).keywordCoverage < 100);
+  assert.ok(analyzeMatch(r).missing.includes('typescript'));
+});
+
+test('模块上移下移不会丢失内容', () => {
+  const r = sampleResume();
+  r.modules.push({ id: 'custom-cert', type: 'custom', title: '资格证书', visible: true, items: [{ id: 'cert-1', title: '证书 A', subtitle: '', period: '', details: '' }] });
+  const moved = moveModule(r.modules, 5, -1);
+  assert.equal(moved[4].id, 'custom-cert');
+  assert.equal(moved[4].items[0].title, '证书 A');
 });
 
 test('关键词覆盖和空岗位说明有明确结果', () => {

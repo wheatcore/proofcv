@@ -1,4 +1,4 @@
-import { STORAGE_KEY, blankResume, sampleResume, normalizeResume, toMarkdown, analyzeMatch, applyDraft } from './resume.js';
+import { STORAGE_KEY, blankResume, sampleResume, normalizeResume, normalizeModules, toMarkdown, analyzeMatch, applyDraft, moveModule } from './resume.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -71,6 +71,15 @@ function renderEducation() {
     (resume.education.length ? resume.education.map((item, index) => `<div class="entry-card"><div class="entry-head"><span class="entry-index">${String(index + 1).padStart(2, '0')} / 教育经历</span><button class="icon-button" data-action="remove-entry" data-section="education" data-index="${index}">×</button></div><div class="form-grid">${field('学校', item.school, `data-item="education|${index}|school"`, '学校名称')}${field('学历 / 专业', item.degree, `data-item="education|${index}|degree"`, '本科 · 计算机科学')}${field('时间范围', item.period, `data-item="education|${index}|period"`, '2019 — 2023')}${field('补充信息', item.details, `data-item="education|${index}|details"`, '相关课程、荣誉等', true, 3)}</div></div>`).join('') : `<div class="empty-state"><strong>还没有教育经历</strong><p>点击下方按钮添加学校与专业。</p></div>`) + `<button class="add-button" data-action="add-entry" data-section="education">＋ 添加教育经历</button>`;
 }
 
+function renderModules() {
+  return heading('05 / MAKE IT YOURS', '按你的故事排版。', '调整模块标题与顺序；隐藏的模块保留数据，但不会出现在预览和导出中。') +
+    `<div class="module-list">${resume.modules.map((module, index) => `<section class="module-card"><div class="module-row"><span class="module-order">${String(index + 1).padStart(2, '0')}</span><div class="module-name"><label for="module-title-${index}">模块标题</label><input id="module-title-${index}" data-module-title="${index}" value="${esc(module.title)}" maxlength="40" aria-label="第 ${index + 1} 个模块标题"></div><div class="module-controls"><button data-action="move-module" data-index="${index}" data-direction="-1" aria-label="将 ${esc(module.title)} 上移" ${index === 0 ? 'disabled' : ''}>↑</button><button data-action="move-module" data-index="${index}" data-direction="1" aria-label="将 ${esc(module.title)} 下移" ${index === resume.modules.length - 1 ? 'disabled' : ''}>↓</button><button class="module-visibility ${module.visible ? 'on' : ''}" data-action="toggle-module" data-index="${index}" aria-label="${module.visible ? '隐藏' : '显示'} ${esc(module.title)}">${module.visible ? '显示中' : '已隐藏'}</button>${module.type === 'custom' ? `<button class="module-delete" data-action="delete-module" data-index="${index}" aria-label="删除 ${esc(module.title)}">×</button>` : ''}</div></div>${module.type === 'custom' ? renderCustomItems(module, index) : ''}</section>`).join('')}</div><div class="new-module"><label for="new-module-name">添加自定义模块</label><div><input id="new-module-name" placeholder="例如：荣誉奖项、证书、开源贡献" maxlength="40"><button class="primary-button" data-action="add-module">＋ 添加模块</button></div><small>自定义模块可以添加多条记录，每条包含标题、说明、时间和详情。</small></div>`;
+}
+
+function renderCustomItems(module, moduleIndex) {
+  return `<div class="custom-items"><div class="custom-head"><span>模块内容 · ${module.items.length} 条</span><button class="mini-add" data-action="add-custom-item" data-index="${moduleIndex}">＋ 添加记录</button></div>${module.items.map((item, itemIndex) => `<div class="custom-item"><div class="custom-item-head"><strong>记录 ${itemIndex + 1}</strong><button class="icon-button" data-action="remove-custom-item" data-index="${moduleIndex}" data-item-index="${itemIndex}" aria-label="删除第 ${itemIndex + 1} 条记录">×</button></div><div class="form-grid">${field('标题', item.title, `data-custom-item="${moduleIndex}|${itemIndex}|title"`, '例如：全国大学生设计竞赛')}${field('角色 / 说明', item.subtitle, `data-custom-item="${moduleIndex}|${itemIndex}|subtitle"`, '例如：一等奖')}${field('时间', item.period, `data-custom-item="${moduleIndex}|${itemIndex}|period"`, '例如：2024.06')}${field('详情', item.details, `data-custom-item="${moduleIndex}|${itemIndex}|details"`, '写清可核实的事实。', true, 3)}</div></div>`).join('')}</div>`;
+}
+
 function renderAI() {
   return `<div class="ai-hero"><span>✳ EVIDENCE IN, CLARITY OUT</span><h3>AI 是编辑，不是编剧。</h3><p>把你的真实事实交给 AI 整理；每次生成和润色都会先展示建议，由你选择是否应用。</p></div>
     <div class="ai-config ${aiReady ? '' : 'offline'}" id="ai-status">${aiReady ? 'AI 服务已连接。输入事实笔记即可生成草稿。' : '公开演示可编辑和导出。要使用 AI，请按 README 在本机配置 OPENAI_API_KEY 并运行服务。'}</div>
@@ -81,7 +90,7 @@ function renderAI() {
 function renderTab() {
   $('.tabs .active')?.classList.remove('active');
   $(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
-  $('#tab-content').innerHTML = ({ profile: renderProfile, experience: () => renderCards('experiences'), projects: renderProjects, education: renderEducation, ai: renderAI })[activeTab]();
+  $('#tab-content').innerHTML = ({ profile: renderProfile, experience: () => renderCards('experiences'), projects: renderProjects, education: renderEducation, modules: renderModules, ai: renderAI })[activeTab]();
   $('#demo-banner').classList.toggle('hidden', !demoMode);
 }
 
@@ -91,13 +100,18 @@ function previewEntry(item, title, subtitle) {
 
 function renderPreview() {
   const r = resume; const p = r.personal;
-  const block = (title, body) => body ? `<section class="paper-section"><div class="paper-heading">${title}</div>${body}</section>` : '';
+  const block = (title, body) => body ? `<section class="paper-section"><div class="paper-heading">${esc(title)}</div>${body}</section>` : '';
+  const sections = r.modules.filter(module => module.visible).map(module => {
+    if (module.type === 'summary') return block(module.title, r.summary ? `<p class="paper-summary">${esc(r.summary)}</p>` : '<p class="paper-empty">用两三句话概括你的核心优势。</p>');
+    if (module.type === 'skills') return block(module.title, r.skills.length ? `<div class="paper-skill-list">${r.skills.map(s => `<span>${esc(s)}</span>`).join('')}</div>` : '');
+    if (module.type === 'experiences') return block(module.title, r.experiences.map(e => previewEntry(e, [e.role, e.company].filter(Boolean).join(' · '), '')).join(''));
+    if (module.type === 'projects') return block(module.title, r.projects.map(e => previewEntry(e, e.name, e.role)).join(''));
+    if (module.type === 'education') return block(module.title, r.education.map(e => `<div class="paper-entry"><div class="paper-entry-top"><strong>${esc(e.school)}</strong><em>${esc(e.period)}</em></div><div class="paper-entry-sub">${esc(e.degree)}</div>${e.details ? `<p>${esc(e.details)}</p>` : ''}</div>`).join(''));
+    if (module.type === 'custom') return block(module.title, module.items.filter(e => e.title || e.subtitle || e.period || e.details).map(e => `<div class="paper-entry"><div class="paper-entry-top"><strong>${esc(e.title)}</strong><em>${esc(e.period)}</em></div>${e.subtitle ? `<div class="paper-entry-sub">${esc(e.subtitle)}</div>` : ''}${e.details ? `<p class="paper-summary">${esc(e.details)}</p>` : ''}</div>`).join(''));
+    return '';
+  }).join('');
   $('#resume-preview').innerHTML = `<header class="paper-top"><h2 class="paper-name">${esc(p.name || '你的名字')}</h2><p class="paper-role">${esc(p.title || '你的求职定位')}</p><div class="paper-contact">${[p.city, p.phone, p.email, p.link].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('')}</div></header>
-    ${block('个人简介', r.summary ? `<p class="paper-summary">${esc(r.summary)}</p>` : '<p class="paper-empty">用两三句话概括你的核心优势。</p>')}
-    ${block('核心技能', r.skills.length ? `<div class="paper-skill-list">${r.skills.map(s => `<span>${esc(s)}</span>`).join('')}</div>` : '')}
-    ${block('工作经历', r.experiences.map(e => previewEntry(e, [e.role, e.company].filter(Boolean).join(' · '), '')).join(''))}
-    ${block('项目经历', r.projects.map(e => previewEntry(e, e.name, e.role)).join(''))}
-    ${block('教育经历', r.education.map(e => `<div class="paper-entry"><div class="paper-entry-top"><strong>${esc(e.school)}</strong><em>${esc(e.period)}</em></div><div class="paper-entry-sub">${esc(e.degree)}</div>${e.details ? `<p>${esc(e.details)}</p>` : ''}</div>`).join(''))}`;
+    ${sections}`;
 }
 
 function renderInsights() {
@@ -162,7 +176,19 @@ $('#tab-content').addEventListener('input', event => {
   } else if (el.dataset.bullet) {
     const [section, index, bIndex] = el.dataset.bullet.split('|');
     resume[section][Number(index)].bullets[Number(bIndex)] = el.value; update();
+  } else if (el.dataset.moduleTitle !== undefined) {
+    resume.modules[Number(el.dataset.moduleTitle)].title = el.value.slice(0, 40); update();
+  } else if (el.dataset.customItem) {
+    const [moduleIndex, itemIndex, key] = el.dataset.customItem.split('|');
+    resume.modules[Number(moduleIndex)].items[Number(itemIndex)][key] = el.value; update();
   } else if (el.dataset.notes) notes = el.value;
+});
+
+$('#tab-content').addEventListener('focusout', event => {
+  if (event.target.dataset.moduleTitle === undefined) return;
+  resume.modules = normalizeModules(resume.modules);
+  event.target.value = resume.modules[Number(event.target.dataset.moduleTitle)].title;
+  update();
 });
 
 $('#tab-content').addEventListener('click', async event => {
@@ -170,7 +196,22 @@ $('#tab-content').addEventListener('click', async event => {
   if (action) {
     const { section, index, bulletIndex } = action.dataset;
     const i = Number(index); const b = Number(bulletIndex);
-    if (action.dataset.action === 'add-entry') {
+    if (action.dataset.action === 'add-module') {
+      const name = $('#new-module-name').value.trim();
+      if (!name) return toast('请先输入模块名称。');
+      if (resume.modules.length >= 20) return toast('最多支持 20 个模块。');
+      resume.modules.push({ id: `custom-${id()}`, type: 'custom', title: name.slice(0, 40), visible: true, items: [] });
+    } else if (action.dataset.action === 'move-module') resume.modules = moveModule(resume.modules, i, Number(action.dataset.direction));
+    else if (action.dataset.action === 'toggle-module') resume.modules[i].visible = !resume.modules[i].visible;
+    else if (action.dataset.action === 'delete-module') {
+      if (resume.modules[i].type !== 'custom') return;
+      if (!confirm(`删除「${resume.modules[i].title}」及其中全部记录？建议先导出 JSON 备份。`)) return;
+      resume.modules.splice(i, 1);
+    } else if (action.dataset.action === 'add-custom-item') {
+      if (resume.modules[i].items.length >= 12) return toast('每个模块最多添加 12 条记录。');
+      resume.modules[i].items.push({ id: id(), title: '', subtitle: '', period: '', details: '' });
+    } else if (action.dataset.action === 'remove-custom-item') resume.modules[i].items.splice(Number(action.dataset.itemIndex), 1);
+    else if (action.dataset.action === 'add-entry') {
       resume[section].push(section === 'education' ? { id: id(), school: '', degree: '', period: '', details: '' } : { id: id(), ...(section === 'projects' ? { name: '', role: '' } : { company: '', role: '' }), period: '', bullets: [''] });
     } else if (action.dataset.action === 'remove-entry') resume[section].splice(i, 1);
     else if (action.dataset.action === 'add-bullet') resume[section][i].bullets.push('');
