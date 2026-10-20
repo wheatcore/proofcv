@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2ea">
+  <meta name="description" content="ProofCV：把真实经历写成有说服力的简历。结构化编辑、AI 建议、实时预览与多格式导出。">
+  <title>ProofCV — 把经历写得更有分量</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="ProofCV 首页"><span class="brand-mark">P<span>•</span></span><span>proof<span>cv</span></span></a>
+      <div class="top-center"><span class="live-dot"></span><span id="save-status">已在浏览器本地保存</span></div>
+      <div class="top-actions"><a href="https://github.com/wheatcore/proofcv" target="_blank" rel="noreferrer">GitHub ↗</a><button class="text-button" id="import-button">导入 JSON</button><button class="outline-button" id="export-menu-button">导出简历 <span>↗</span></button></div>
+    </header>
+
+    <main id="top">
+      <div class="intro-row">
+        <div><p class="eyebrow"><span class="eyebrow-line"></span> THE RESUME STUDIO / 01</p><h1>经历值得被<span>看见。</span></h1><p class="intro-copy">用真实事实搭好骨架，让 AI 帮你把表达磨得更锋利。每一处修改，都由你决定。</p></div>
+        <div class="intro-side"><span class="seal">写得清楚<br>比写得满<br>更重要<span class="seal-star">✳</span></span><p>生成 · 润色 · 编辑 · 导出<br><strong>一处完成</strong></p></div>
+      </div>
+
+      <div class="studio-grid">
+        <section class="editor-column" aria-label="简历编辑器">
+          <div class="panel-head"><div><span class="step-label">01 / BUILD YOUR STORY</span><h2>简历编辑器</h2></div><button class="quiet-button" id="reset-button" title="清空并新建">＋ 新建空白</button></div>
+          <div class="demo-banner" id="demo-banner"><span class="demo-icon">i</span><div><strong>当前展示的是虚构示例</strong><span>请替换全部示例内容后再导出或投递。</span></div><button id="dismiss-demo" aria-label="关闭提示">×</button></div>
+          <nav class="tabs" aria-label="编辑章节">
+            <button class="tab active" data-tab="profile">01 基本信息</button>
+            <button class="tab" data-tab="experience">02 工作经历</button>
+            <button class="tab" data-tab="projects">03 项目与技能</button>
+            <button class="tab" data-tab="education">04 教育经历</button>
+            <button class="tab ai-tab" data-tab="ai">✳ AI 工作台</button>
+          </nav>
+          <div class="tab-content" id="tab-content"></div>
+        </section>
+
+        <aside class="preview-column" aria-label="实时预览">
+          <div class="preview-head"><div><span class="step-label">02 / SEE THE RESULT</span><h2>实时预览</h2></div><span class="a4-pill">A4 版式</span></div>
+          <div class="paper-stage"><article class="paper" id="resume-preview" aria-label="简历预览"></article></div>
+          <div class="insight-card"><div class="insight-head"><span>岗位关键词提示</span><span class="insight-symbol">⌁</span></div><div class="insight-body"><div class="score-wrap"><strong id="coverage-score">—</strong><span>关键词覆盖</span></div><div class="insight-detail"><div id="keyword-summary">在 AI 工作台填写目标岗位描述，即可查看关键词提示。</div><div class="keyword-tags" id="keyword-tags"></div></div></div><p class="insight-foot">仅做文本提示，不代表真实 ATS 评分。请只补充与你经历相符的内容。</p></div>
+        </aside>
+      </div>
+      <section class="endnote"><span>PROOF / NOT PROMISE</span><p>好的简历不制造经历，只让真实经历更准确地表达。</p><a href="https://github.com/wheatcore/proofcv" target="_blank" rel="noreferrer">开源代码 ↗</a></section>
+    </main>
+  </div>
+
+  <div class="popover hidden" id="export-popover" role="menu" aria-label="导出格式"><button data-export="pdf">打印 / 保存 PDF <span>↗</span></button><button data-export="markdown">下载 Markdown <span>↓</span></button><button data-export="json">备份 JSON <span>↓</span></button></div>
+  <div class="modal-backdrop hidden" id="proposal-backdrop"><section class="proposal-modal" role="dialog" aria-modal="true" aria-labelledby="proposal-title"><div class="modal-heading"><div><span class="step-label">AI SUGGESTION / REVIEW FIRST</span><h2 id="proposal-title">查看 AI 建议</h2></div><button class="icon-close" id="close-proposal" aria-label="关闭">×</button></div><div id="proposal-body"></div><div class="modal-actions"><button class="quiet-button" id="reject-proposal">保留原文</button><button class="primary-button" id="accept-proposal">应用建议 ↗</button></div><p class="proposal-foot">应用前请核对事实、数字和专有名称。AI 建议不会自动写入简历。</p></section></div>
+  <div class="toast hidden" id="toast" role="status"></div>
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+</body>
+</html>
