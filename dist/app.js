@@ -48,11 +48,11 @@ function renderProfile() {
   const p = resume.personal;
   return heading('01 / THE BASICS', '先让人认识你。', '联系方式和个人定位，会出现在简历最显眼的位置。') +
     `<div class="form-grid">${field('姓名', p.name, 'data-field="personal.name"', '你的姓名')}${field('求职定位', p.title, 'data-field="personal.title"', '例如：产品经理')}${field('邮箱', p.email, 'data-field="personal.email"', 'you@example.com')}${field('电话', p.phone, 'data-field="personal.phone"', '联系电话')}${field('所在城市', p.city, 'data-field="personal.city"', '例如：上海')}${field('作品 / 个人链接', p.link, 'data-field="personal.link"', 'github.com/you')}
-    </div><div class="divider"></div><div class="form-grid">${field('个人简介', resume.summary, 'data-field="summary"', '用 2–3 句话说清你的领域、经验和擅长解决的问题。', true, 5, '具体、可核实，比形容词更有说服力。')}</div>`;
+    </div><div class="divider"></div><div class="form-grid">${field('个人简介', resume.summary, 'data-field="summary"', '用 2–3 句话说清你的领域、经验和擅长解决的问题。', true, 5, '具体、可核实，比形容词更有说服力。')}</div><div class="polish-row"><button class="polish-button" data-action="polish-summary">✳ AI 润色个人简介</button></div>`;
 }
 
 function renderBullets(section, index, bullets) {
-  return `<div class="bullet-list"><div class="bullet-top"><span>工作要点 / 成果</span><button class="mini-add" data-action="add-bullet" data-section="${section}" data-index="${index}">＋ 增加一条</button></div>${bullets.map((bullet, bIndex) => `<div class="bullet-row"><textarea data-bullet="${section}|${index}|${bIndex}" aria-label="第 ${bIndex + 1} 条要点" placeholder="写具体做了什么、怎样做、结果如何">${esc(bullet)}</textarea><button class="spark-button" data-action="polish" data-section="${section}" data-index="${index}" data-bullet-index="${bIndex}" title="用 AI 润色该要点" aria-label="AI 润色第 ${bIndex + 1} 条要点">✳</button><button class="icon-button remove-bullet" data-action="remove-bullet" data-section="${section}" data-index="${index}" data-bullet-index="${bIndex}" title="删除要点">×</button></div>`).join('')}</div>`;
+  return `<div class="bullet-list"><div class="bullet-top"><span>工作要点 / 成果</span><button class="mini-add" data-action="add-bullet" data-section="${section}" data-index="${index}">＋ 增加一条</button></div>${bullets.map((bullet, bIndex) => `<div class="bullet-row"><textarea data-bullet="${section}|${index}|${bIndex}" aria-label="第 ${bIndex + 1} 条要点" placeholder="写具体做了什么、怎样做、结果如何">${esc(bullet)}</textarea><button class="spark-button" data-action="polish" data-section="${section}" data-index="${index}" data-bullet-index="${bIndex}" title="用 AI 润色该要点" aria-label="AI 润色第 ${bIndex + 1} 条要点">✳ 润色</button><button class="icon-button remove-bullet" data-action="remove-bullet" data-section="${section}" data-index="${index}" data-bullet-index="${bIndex}" title="删除要点">×</button></div>`).join('')}</div>`;
 }
 
 function renderCards(section) {
@@ -68,7 +68,7 @@ function renderProjects() {
 
 function renderEducation() {
   return heading('04 / EDUCATION', '学习的路径。', '写清学校、学历和时间；补充信息可选。') +
-    (resume.education.length ? resume.education.map((item, index) => `<div class="entry-card"><div class="entry-head"><span class="entry-index">${String(index + 1).padStart(2, '0')} / 教育经历</span><button class="icon-button" data-action="remove-entry" data-section="education" data-index="${index}">×</button></div><div class="form-grid">${field('学校', item.school, `data-item="education|${index}|school"`, '学校名称')}${field('学历 / 专业', item.degree, `data-item="education|${index}|degree"`, '本科 · 计算机科学')}${field('时间范围', item.period, `data-item="education|${index}|period"`, '2019 — 2023')}${field('补充信息', item.details, `data-item="education|${index}|details"`, '相关课程、荣誉等', true, 3)}</div></div>`).join('') : `<div class="empty-state"><strong>还没有教育经历</strong><p>点击下方按钮添加学校与专业。</p></div>`) + `<button class="add-button" data-action="add-entry" data-section="education">＋ 添加教育经历</button>`;
+    (resume.education.length ? resume.education.map((item, index) => `<div class="entry-card"><div class="entry-head"><span class="entry-index">${String(index + 1).padStart(2, '0')} / 教育经历</span><button class="icon-button" data-action="remove-entry" data-section="education" data-index="${index}">×</button></div><div class="form-grid">${field('学校', item.school, `data-item="education|${index}|school"`, '学校名称')}${field('学历 / 专业', item.degree, `data-item="education|${index}|degree"`, '本科 · 计算机科学')}${field('时间范围', item.period, `data-item="education|${index}|period"`, '2019 — 2023')}${field('补充信息', item.details, `data-item="education|${index}|details"`, '相关课程、荣誉等', true, 3)}</div><div class="polish-row"><button class="polish-button" data-action="polish-education" data-index="${index}">✳ AI 润色补充信息</button></div></div>`).join('') : `<div class="empty-state"><strong>还没有教育经历</strong><p>点击下方按钮添加学校与专业。</p></div>`) + `<button class="add-button" data-action="add-entry" data-section="education">＋ 添加教育经历</button>`;
 }
 
 function renderModules() {
@@ -83,7 +83,7 @@ function renderCustomModule(module, moduleIndex) {
 }
 
 function renderCustomItems(module, moduleIndex) {
-  return `<div class="custom-items"><div class="custom-head"><span>模块内容 · ${module.items.length} 条</span><button class="mini-add" data-action="add-custom-item" data-index="${moduleIndex}">＋ 添加记录</button></div>${module.items.length ? '' : '<p class="custom-empty">这里还没有记录。添加一条，写下奖项、证书或其他想展示的经历。</p>'}${module.items.map((item, itemIndex) => `<div class="custom-item"><div class="custom-item-head"><strong>记录 ${itemIndex + 1}</strong><button class="icon-button" data-action="remove-custom-item" data-index="${moduleIndex}" data-item-index="${itemIndex}" aria-label="删除第 ${itemIndex + 1} 条记录">×</button></div><div class="form-grid">${field('标题', item.title, `data-custom-item="${moduleIndex}|${itemIndex}|title"`, '例如：全国大学生设计竞赛')}${field('角色 / 说明', item.subtitle, `data-custom-item="${moduleIndex}|${itemIndex}|subtitle"`, '例如：一等奖')}${field('时间', item.period, `data-custom-item="${moduleIndex}|${itemIndex}|period"`, '例如：2024.06')}${field('详情', item.details, `data-custom-item="${moduleIndex}|${itemIndex}|details"`, '写清可核实的事实。', true, 3)}</div></div>`).join('')}</div>`;
+  return `<div class="custom-items"><div class="custom-head"><span>模块内容 · ${module.items.length} 条</span><button class="mini-add" data-action="add-custom-item" data-index="${moduleIndex}">＋ 添加记录</button></div>${module.items.length ? '' : '<p class="custom-empty">这里还没有记录。添加一条，写下奖项、证书或其他想展示的经历。</p>'}${module.items.map((item, itemIndex) => `<div class="custom-item"><div class="custom-item-head"><strong>记录 ${itemIndex + 1}</strong><button class="icon-button" data-action="remove-custom-item" data-index="${moduleIndex}" data-item-index="${itemIndex}" aria-label="删除第 ${itemIndex + 1} 条记录">×</button></div><div class="form-grid">${field('标题', item.title, `data-custom-item="${moduleIndex}|${itemIndex}|title"`, '例如：全国大学生设计竞赛')}${field('角色 / 说明', item.subtitle, `data-custom-item="${moduleIndex}|${itemIndex}|subtitle"`, '例如：一等奖')}${field('时间', item.period, `data-custom-item="${moduleIndex}|${itemIndex}|period"`, '例如：2024.06')}${field('详情', item.details, `data-custom-item="${moduleIndex}|${itemIndex}|details"`, '写清可核实的事实。', true, 3)}</div><div class="polish-row"><button class="polish-button" data-action="polish-custom" data-index="${moduleIndex}" data-item-index="${itemIndex}">✳ AI 润色详情</button></div></div>`).join('')}</div>`;
 }
 
 function renderAI() {
@@ -144,8 +144,8 @@ function download(name, content, type) {
 
 function filename(extension) { return `${resume.personal.name.trim() || '我的简历'}-ProofCV.${extension}`; }
 
-async function runAI(kind, payload) {
-  const button = kind === 'generate' ? $('#generate-button') : document.activeElement;
+async function runAI(kind, payload, button = $('#generate-button')) {
+  if (!aiReady) throw new Error('AI 服务尚未连接。请按 README 在本机配置 OPENAI_API_KEY 并运行 npm start。');
   if (button) { button.disabled = true; button.dataset.original = button.textContent; button.textContent = '正在整理…'; }
   try {
     const response = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ...payload }) });
@@ -155,9 +155,17 @@ async function runAI(kind, payload) {
   } finally { if (button) { button.disabled = false; button.textContent = button.dataset.original; } }
 }
 
+async function requestPolish(before, label, apply, button) {
+  if (before.trim().length < 5) return toast('请先填写至少 5 个字的真实内容，再用 AI 润色。');
+  try {
+    const result = await runAI('polish', { bullet: before, fieldLabel: label, role: resume.target.role || resume.personal.title }, button);
+    openProposal({ kind: 'polish', label, before, result, apply });
+  } catch (error) { toast(error.message); }
+}
+
 function openProposal(info) {
   proposal = info;
-  $('#proposal-title').textContent = info.kind === 'polish' ? '要点润色建议' : '生成的简历草稿';
+  $('#proposal-title').textContent = info.kind === 'polish' ? `${info.label}润色建议` : '生成的简历草稿';
   if (info.kind === 'polish') {
     $('#proposal-body').innerHTML = `<div class="compare-grid"><div class="compare-card"><span>原文 / BEFORE</span><p>${esc(info.before)}</p></div><div class="compare-card new"><span>建议 / AFTER</span><p>${esc(info.result.rewrite)}</p></div></div><p class="rationale">${esc(info.result.rationale)}</p>`;
   } else {
@@ -245,9 +253,18 @@ $('#tab-content').addEventListener('click', async event => {
     else if (action.dataset.action === 'remove-bullet') resume[section][i].bullets.splice(b, 1);
     else if (action.dataset.action === 'polish') {
       const bullet = resume[section][i].bullets[b];
-      if (!bullet?.trim()) return toast('先写一条要点，再用 AI 润色。');
-      try { const result = await runAI('polish', { bullet, role: resume.target.role || resume.personal.title }); openProposal({ kind: 'polish', section, index: i, bulletIndex: b, before: bullet, result }); }
-      catch (error) { toast(error.message); }
+      await requestPolish(bullet, section === 'experiences' ? '工作要点' : '项目要点', rewrite => { resume[section][i].bullets[b] = rewrite; }, action);
+      return;
+    } else if (action.dataset.action === 'polish-summary') {
+      await requestPolish(resume.summary, '个人简介', rewrite => { resume.summary = rewrite; }, action);
+      return;
+    } else if (action.dataset.action === 'polish-education') {
+      await requestPolish(resume.education[i].details, '教育补充信息', rewrite => { resume.education[i].details = rewrite; }, action);
+      return;
+    } else if (action.dataset.action === 'polish-custom') {
+      const itemIndex = Number(action.dataset.itemIndex);
+      const module = resume.modules[i];
+      await requestPolish(module.items[itemIndex].details, `${module.title}详情`, rewrite => { module.items[itemIndex].details = rewrite; }, action);
       return;
     }
     update(); renderTab(); return;
@@ -261,9 +278,8 @@ $('#tab-content').addEventListener('click', async event => {
 
 $('#accept-proposal').addEventListener('click', () => {
   if (!proposal) return;
-  if (proposal.kind === 'polish') {
-    resume[proposal.section][proposal.index].bullets[proposal.bulletIndex] = proposal.result.rewrite;
-  } else resume = applyDraft(resume, proposal.result);
+  if (proposal.kind === 'polish') proposal.apply(proposal.result.rewrite);
+  else resume = applyDraft(resume, proposal.result);
   closeProposal(); update(); renderTab(); toast('建议已应用，内容已在本地保存。');
 });
 $('#reject-proposal').addEventListener('click', closeProposal);

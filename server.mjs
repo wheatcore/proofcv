@@ -45,11 +45,12 @@ function requestMessages(input) {
   }
   if (input.kind === 'polish') {
     const bullet = String(input.bullet || '').trim();
-    if (bullet.length < 5 || bullet.length > 1500) throw Object.assign(new Error('要点需要 5–1500 字'), { status: 400 });
+    if (bullet.length < 5 || bullet.length > 1500) throw Object.assign(new Error('润色内容需要 5–1500 字'), { status: 400 });
     const role = String(input.role || '').slice(0, 120);
+    const fieldLabel = String(input.fieldLabel || '工作/项目要点').slice(0, 40);
     return [
-      { role: 'system', content: system + ' 返回字段 rewrite (字符串) 和 rationale (一句简短说明)。保留原句中所有可核实的数字、名称和技术，不得新添事实。' },
-      { role: 'user', content: `目标岗位：${role}\n原要点：\n<fact>${bullet}</fact>` },
+      { role: 'system', content: system + ' 返回字段 rewrite (字符串) 和 rationale (一句简短说明)。保留原文中所有可核实的数字、名称和技术，不得新添事实。保持原文是短句或段落的形式。' },
+      { role: 'user', content: `目标岗位：${role}\n简历字段：${fieldLabel}\n原文：\n<fact>${bullet}</fact>` },
     ];
   }
   throw Object.assign(new Error('未知 AI 操作'), { status: 400 });
